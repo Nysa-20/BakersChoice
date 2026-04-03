@@ -1,0 +1,38 @@
+      Baker's Choice
+==============================
+Bill No: 6174
+Customer: Customer
+Phone: 0000000000
+------------------------------
+Item            Qty      Price
+Choc                2       1100 Rs
+RV                  1         25 Rs
+Pln                 1         80 Rs
+------------------------------
+Subtotal:      1205.00 Rs
+Tax (18%):     216.90 Rs
+TOTAL:         1421.90 Rs
+==============================
+
+========================================
+
+         Baker's Choice
+   Artisan Bakery & Confectionery
+==========================================
+Bill No : 5653          Date: 3/4/2026
+Customer: Nysa
+Phone   : 9876543455
+------------------------------------------
+Item                      Qty       Amount
+------------------------------------------
+Chocolate Overload       2   Rs 1100.00
+Red Velvet Cookie        1   Rs 25.00
+Walnut Brownie           1   Rs 55.00
+------------------------------------------
+Subtotal :                       Rs 1180.00
+GST 18%  :                       Rs 212.40
+TOTAL    :                       Rs 1392.40
+==========================================
+       Thank you! Visit again.
+
+========================================

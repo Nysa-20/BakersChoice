@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baker's Choice — Order Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cream: #FAF6EF;
+            --warm-white: #FFF9F2;
+            --espresso: #1C0F0A;
+            --cocoa: #3D1F15;
+            --rust: #A63D2F;
+            --gold: #C9952A;
+            --gold-light: #E8B84B;
+            --shadow: rgba(28,15,10,0.12);
+            --shadow-deep: rgba(28,15,10,0.25);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        html { scroll-behavior:smooth; }
+        body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--espresso); min-height:100vh; overflow-x:hidden; }
+
+        /* SIDEBAR */
+        .sidebar { position:fixed; left:0; top:0; width:72px; height:100vh; background:var(--espresso); display:flex; flex-direction:column; align-items:center; padding:24px 0; gap:4px; z-index:100; transition:width 0.3s cubic-bezier(0.4,0,0.2,1); overflow:hidden; }
+        .sidebar:hover { width:220px; }
+        .sidebar-logo { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:20px; color:var(--gold); white-space:nowrap; overflow:hidden; opacity:0; width:0; transition:opacity 0.2s,width 0.3s; }
+        .sidebar:hover .sidebar-logo { opacity:1; width:160px; }
+        .sidebar-icon { font-size:26px; transition:opacity 0.2s; }
+        .sidebar:hover .sidebar-icon { display:none; }
+        .sidebar-divider { width:40px; height:1px; background:rgba(255,255,255,0.12); margin:10px 0; transition:width 0.3s; }
+        .sidebar:hover .sidebar-divider { width:180px; }
+        .nav-item { display:flex; align-items:center; gap:14px; width:100%; padding:12px 20px; cursor:pointer; border:none; background:transparent; color:rgba(255,255,255,0.5); font-family:'DM Sans',sans-serif; font-size:12px; font-weight:400; letter-spacing:0.08em; text-transform:uppercase; transition:all 0.2s; text-align:left; white-space:nowrap; border-left:3px solid transparent; }
+        .nav-item:hover { color:var(--gold-light); background:rgba(255,255,255,0.05); }
+        .nav-item.active { color:var(--gold); border-left-color:var(--gold); background:rgba(201,149,42,0.1); }
+        .nav-icon { font-size:18px; flex-shrink:0; width:32px; text-align:center; }
+        .nav-label { opacity:0; transition:opacity 0.15s 0s; font-size:12px; }
+        .sidebar:hover .nav-label { opacity:1; transition:opacity 0.2s 0.15s; }
+        .nav-bill-btn { margin-top:auto; background:var(--gold) !important; color:var(--espresso) !important; font-weight:500; border-left-color:transparent !important; }
+        .nav-bill-btn:hover { background:var(--gold-light) !important; color:var(--espresso) !important; }
+
+        /* MAIN */
+        .main { margin-left:72px; min-height:100vh; }
+        .page { display:none; min-height:100vh; animation:fadeIn 0.35s ease; }
+        .page.active { display:block; }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+        /* HOME */
+        #home { background:var(--espresso); color:var(--cream); position:relative; overflow:hidden; }
+        .home-glow1 { position:absolute; top:-100px; right:-100px; width:500px; height:500px; border-radius:50%; background:radial-gradient(circle, rgba(201,149,42,0.07) 0%, transparent 70%); pointer-events:none; }
+        .home-glow2 { position:absolute; bottom:-120px; left:-80px; width:400px; height:400px; border-radius:50%; background:radial-gradient(circle, rgba(166,61,47,0.09) 0%, transparent 70%); pointer-events:none; }
+        .home-hero { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; padding:60px 40px; text-align:center; position:relative; z-index:2; }
+        .home-eyebrow { font-size:11px; letter-spacing:0.35em; text-transform:uppercase; color:var(--gold); margin-bottom:28px; display:flex; align-items:center; gap:16px; }
+        .home-eyebrow::before,.home-eyebrow::after { content:''; display:block; width:48px; height:1px; background:var(--gold); opacity:0.5; }
+        .home-title { font-family:'Cormorant Garamond',serif; font-weight:300; font-size:clamp(60px,10vw,116px); line-height:0.9; letter-spacing:-0.02em; margin-bottom:10px; }
+        .home-title em { font-style:italic; color:var(--gold); }
+        .home-subtitle { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:21px; color:rgba(250,246,239,0.4); margin-bottom:64px; font-weight:300; }
+        .home-cards { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; max-width:860px; width:100%; }
+        .home-card { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); border-radius:6px; padding:28px 16px; cursor:pointer; transition:all 0.3s cubic-bezier(0.4,0,0.2,1); text-align:center; position:relative; overflow:hidden; }
+        .home-card::after { content:''; position:absolute; bottom:0; left:0; right:0; height:2px; background:var(--gold); transform:scaleX(0); transition:transform 0.3s; }
+        .home-card:hover { background:rgba(255,255,255,0.07); border-color:rgba(201,149,42,0.3); transform:translateY(-4px); box-shadow:0 20px 40px rgba(0,0,0,0.35); }
+        .home-card:hover::after { transform:scaleX(1); }
+        .card-img-wrap { width:76px; height:76px; border-radius:50%; overflow:hidden; margin:0 auto 14px; border:2px solid rgba(201,149,42,0.35); }
+        .card-img-wrap img { width:100%; height:100%; object-fit:cover; filter:brightness(0.8) saturate(0.85); transition:filter 0.3s,transform 0.4s; }
+        .home-card:hover .card-img-wrap img { filter:brightness(1) saturate(1.1); transform:scale(1.08); }
+        .card-emoji { width:76px; height:76px; border-radius:50%; margin:0 auto 14px; border:2px solid rgba(201,149,42,0.35); display:flex; align-items:center; justify-content:center; font-size:32px; background:rgba(201,149,42,0.08); }
+        .card-name { font-size:10px; letter-spacing:0.2em; text-transform:uppercase; color:rgba(250,246,239,0.65); margin-bottom:4px; }
+        .card-sub { font-family:'Cormorant Garamond',serif; font-size:13px; color:var(--gold); opacity:0.75; }
+
+        /* PAGE LAYOUT */
+        .page-header { background:var(--espresso); padding:36px 48px 28px; border-bottom:1px solid rgba(255,255,255,0.06); }
+        .back-btn { display:flex; align-items:center; gap:8px; color:rgba(255,255,255,0.35); font-size:11px; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; background:none; border:none; transition:color 0.2s; font-family:'DM Sans',sans-serif; margin-bottom:10px; }
+        .back-btn:hover { color:var(--gold); }
+        .page-title { font-family:'Cormorant Garamond',serif; font-size:50px; font-weight:300; color:var(--cream); line-height:1; }
+        .page-title em { font-style:italic; color:var(--gold); }
+        .page-subtitle { color:rgba(250,246,239,0.3); font-size:12px; letter-spacing:0.05em; margin-top:5px; }
+        .page-body { padding:36px 48px; background:var(--cream); }
+
+        /* PRODUCT GRID */
+        .section-label { font-size:10px; letter-spacing:0.3em; text-transform:uppercase; color:var(--rust); margin-bottom:14px; margin-top:28px; display:flex; align-items:center; gap:12px; }
+        .section-label:first-child { margin-top:0; }
+        .section-label::after { content:''; flex:1; height:1px; background:rgba(28,15,10,0.09); }
+        .product-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px; }
+        .product-card { background:var(--warm-white); border:1px solid rgba(28,15,10,0.07); border-radius:6px; overflow:hidden; transition:all 0.25s; }
+        .product-card:hover { border-color:rgba(201,149,42,0.4); box-shadow:0 8px 24px var(--shadow); transform:translateY(-2px); }
+        .product-img-wrap { overflow:hidden; height:150px; }
+        .product-img { width:100%; height:150px; object-fit:cover; display:block; filter:saturate(0.82); transition:filter 0.3s,transform 0.4s; }
+        .product-card:hover .product-img { filter:saturate(1.05); transform:scale(1.04); }
+        .product-info { padding:14px 18px 18px; display:flex; align-items:center; justify-content:space-between; }
+        .product-name { font-family:'Cormorant Garamond',serif; font-size:18px; font-weight:400; color:var(--espresso); margin-bottom:2px; }
+        .product-price { font-size:11px; color:var(--rust); font-weight:500; letter-spacing:0.05em; }
+        .qty-control { display:flex; align-items:center; border:1px solid rgba(28,15,10,0.14); border-radius:4px; overflow:hidden; }
+        .qty-btn { width:30px; height:30px; background:var(--espresso); color:var(--cream); border:none; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; transition:background 0.2s; }
+        .qty-btn:hover { background:var(--rust); }
+        .qty-input { width:42px; height:30px; border:none; text-align:center; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; color:var(--espresso); background:var(--warm-white); outline:none; }
+
+        /* BILLING */
+        .bill-layout { display:grid; grid-template-columns:1fr 370px; gap:32px; padding:36px 48px; background:var(--cream); }
+        .form-section-title { font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:400; margin-bottom:18px; color:var(--espresso); }
+        .form-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px; }
+        .form-group { display:flex; flex-direction:column; gap:5px; }
+        .form-label { font-size:10px; letter-spacing:0.2em; text-transform:uppercase; color:rgba(28,15,10,0.45); font-weight:500; }
+        .form-input { padding:11px 13px; border:1px solid rgba(28,15,10,0.14); border-radius:4px; font-family:'DM Sans',sans-serif; font-size:14px; background:var(--warm-white); color:var(--espresso); outline:none; transition:border-color 0.2s; }
+        .form-input:focus { border-color:var(--gold); box-shadow:0 0 0 3px rgba(201,149,42,0.1); }
+        .order-items { margin-top:20px; }
+        .order-item-row { display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px solid rgba(28,15,10,0.06); font-size:14px; }
+        .order-item-price { font-weight:500; }
+
+        /* RECEIPT */
+        .receipt-panel { background:var(--espresso); border-radius:8px; overflow:hidden; box-shadow:0 20px 60px var(--shadow-deep); height:fit-content; position:sticky; top:24px; }
+        .receipt-header { background:var(--rust); padding:22px 26px; text-align:center; }
+        .receipt-logo { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:30px; color:var(--cream); }
+        .receipt-tagline { font-size:10px; letter-spacing:0.2em; text-transform:uppercase; color:rgba(250,246,239,0.55); margin-top:3px; }
+        .receipt-body { padding:22px 26px; }
+        .receipt-meta { display:flex; justify-content:space-between; font-size:10px; color:rgba(250,246,239,0.35); margin-bottom:14px; letter-spacing:0.05em; }
+        .receipt-field { font-size:11px; color:rgba(250,246,239,0.35); margin-bottom:3px; letter-spacing:0.04em; }
+        .receipt-field span { color:rgba(250,246,239,0.65); }
+        .receipt-items { border-top:1px solid rgba(255,255,255,0.09); padding-top:14px; margin:14px 0; min-height:70px; }
+        .receipt-line { display:flex; justify-content:space-between; font-size:13px; color:rgba(250,246,239,0.72); padding:4px 0; }
+        .receipt-empty { color:rgba(250,246,239,0.18); font-size:12px; font-style:italic; text-align:center; padding:18px 0; }
+        .receipt-totals { border-top:1px dashed rgba(255,255,255,0.12); padding-top:12px; }
+        .receipt-tax-line { display:flex; justify-content:space-between; font-size:12px; color:rgba(250,246,239,0.4); padding:3px 0; }
+        .receipt-total-line { display:flex; justify-content:space-between; font-family:'Cormorant Garamond',serif; font-size:22px; color:var(--gold); margin-top:10px; }
+        .receipt-actions { padding:0 26px 26px; display:flex; flex-direction:column; gap:10px; }
+        .btn-primary { width:100%; padding:13px; background:var(--gold); color:var(--espresso); border:none; border-radius:4px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:500; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; transition:all 0.2s; }
+        .btn-primary:hover { background:var(--gold-light); transform:translateY(-1px); box-shadow:0 4px 16px rgba(201,149,42,0.3); }
+        .btn-secondary { width:100%; padding:12px; background:transparent; color:rgba(250,246,239,0.5); border:1px solid rgba(255,255,255,0.12); border-radius:4px; font-family:'DM Sans',sans-serif; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; transition:all 0.2s; }
+        .btn-secondary:hover { border-color:rgba(255,255,255,0.28); color:var(--cream); }
+        .btn-danger { background:rgba(166,61,47,0.9) !important; color:var(--cream) !important; }
+        .btn-dark { background:var(--espresso) !important; color:var(--cream) !important; }
+        .btn-row { display:flex; gap:10px; margin-top:20px; }
+        .btn-row .btn-primary { flex:1; }
+
+        /* TOAST */
+        .toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(16px); background:var(--espresso); color:var(--cream); padding:11px 22px; border-radius:4px; font-size:13px; border-left:3px solid var(--gold); opacity:0; transition:all 0.3s cubic-bezier(0.4,0,0.2,1); z-index:9999; white-space:nowrap; pointer-events:none; }
+        .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+        ::-webkit-scrollbar { width:4px; }
+        ::-webkit-scrollbar-thumb { background:rgba(28,15,10,0.15); border-radius:2px; }
+    </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+    <div class="sidebar-icon">🥐</div>
+    <div class="sidebar-logo">Baker's Choice</div>
+    <div class="sidebar-divider"></div>
+    <button class="nav-item active" onclick="showPage('home')" id="nav-home"><span class="nav-icon">🏠</span><span class="nav-label">Home</span></button>
+    <button class="nav-item" onclick="showPage('cake')" id="nav-cake"><span class="nav-icon">🎂</span><span class="nav-label">Cakes</span></button>
+    <button class="nav-item" onclick="showPage('cookmuf')" id="nav-cookmuf"><span class="nav-icon">🍪</span><span class="nav-label">Cookies & Muffins</span></button>
+    <button class="nav-item" onclick="showPage('breads')" id="nav-breads"><span class="nav-icon">🍞</span><span class="nav-label">Breads & Others</span></button>
+    <button class="nav-item nav-bill-btn" onclick="showPage('bill')" id="nav-bill"><span class="nav-icon">🧾</span><span class="nav-label">Billing</span></button>
+</nav>
+
+<main class="main">
+
+    <!-- HOME -->
+    <div id="home" class="page active">
+        <div class="home-glow1"></div><div class="home-glow2"></div>
+        <div class="home-hero">
+            <div class="home-eyebrow">Order Management System</div>
+            <h1 class="home-title">Baker's<br><em>Choice</em></h1>
+            <p class="home-subtitle">Crafted with love, served with precision</p>
+            <div class="home-cards">
+                <div class="home-card" onclick="showPage('cake')">
+                    <div class="card-img-wrap"><img src="/static/images/Smoor.jpg" alt="Cakes" onerror="this.style.display='none'"></div>
+                    <div class="card-name">Cakes</div><div class="card-sub">7 varieties</div>
+                </div>
+                <div class="home-card" onclick="showPage('cookmuf')">
+                    <div class="card-img-wrap"><img src="/static/images/doublec.webp" alt="Cookies" onerror="this.style.display='none'"></div>
+                    <div class="card-name">Cookies & Muffins</div><div class="card-sub">6 varieties</div>
+                </div>
+                <div class="home-card" onclick="showPage('breads')">
+                    <div class="card-img-wrap"><img src="/static/images/bread.jpg" alt="Breads" onerror="this.style.display='none'"></div>
+                    <div class="card-name">Breads & Others</div><div class="card-sub">5 varieties</div>
+                </div>
+                <div class="home-card" onclick="showPage('bill')">
+                    <div class="card-emoji">🧾</div>
+                    <div class="card-name">Billing Area</div><div class="card-sub">Generate receipt</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CAKES -->
+    <div id="cake" class="page">
+        <div class="page-header">
+            <button class="back-btn" onclick="showPage('home')">← Back to Home</button>
+            <h1 class="page-title"><em>Cakes</em> Selection</h1>
+            <p class="page-subtitle">Premium cakes baked fresh daily</p>
+        </div>
+        <div class="page-body">
+            <div class="section-label">Signature Cakes</div>
+            <div class="product-grid">
+                <div class="product-card">
+                    <div class="product-img-wrap"><img class="product-img" src="/static/images/Smoor.jpg" alt="Chocolate Overload" onerror="this.parentElement.style.height='4px'"></div>
+                    <div class="product-info"><div><div class="product-name">Chocolate Overload</div><div class="product-price">₹550</div></div><div class="qty-control"><button class="qty-btn" onclick="changeQty('Choc',-1)">−</button><input class="qty-input" type="number" id="Choc" value="0" min="0" onchange="liveUpdate()"><button class="qty-btn" onclick="changeQty('Choc',1)">+</button></div></div>
+                </div>
+                <div class="product-card">
+                    <div class="product-img-wrap"><img class="product-img" src="/static/images/smoorpic3.png" alt="Pineapple" onerror="this.parentElement.style.height='4px'"></div>
+                    <div class="product-info"><div><div class="product-name">Pineapple Cake</div><div class="product-price">₹550</div></div><div class="qty-control"><button class="qty-btn" onclick="changeQty('Pine',-1)">−</button><input class="qty-input" type="number" id="Pine" value="0" min="0" onchange="liveUpdate()"><button class="qty-btn" onclick="changeQty('Pine',1)">+</button></div></div>
+                </div>
+                <div class="product-card">
+                    <div class="product-img-wrap"><img class="product-img" src="/static/images/black.webp" alt="Black Forest" onerror="this.parentElement.style.height='4px'"></div>
+                    <div class="product-info"><div><div class="product-name">Black Forest</div><div class="product-price">₹550</div></div><div class="qty-control"><button class="qty-btn" onclick="changeQty('Black',-1)">−</button><input class="qty-input" type="number" id="Black" value="0" min="0" onchange="liveUpdate()"><button class="qty-btn" onclick="changeQty('Black',1)">+</button></div></div>
+                </div>
+                <div class="product-card">
+                    <div class="product-img-wrap"><img class="product-img" src="/static/images/berry.jpg" alt="Mixed Berry" onerror="this.parentElement.style.height='4px'"></div>
+                    <div class="product-info"><div><div class="product-name">Mixed Berry</div><div class="product-price">₹600</div></div><div class="qty-control"><button class="qty-btn" onclick="changeQty('Berry',-1)">−</button><input class="qty-input" type="number" id="Berry" value="0" min="0" onchange="liveUpdate()"><button class="qty-btn" onclick="changeQty('Berry',1)">+</button></div></div>
+                </div>
+                <div class="product-card">
+                    <div class="product-img-wrap"><img class="product-img" src="/static/images/RVCake.jpg" alt="Red Velvet" onerror="this.parentElement.style.height='4px'"></div>
+                    <div class="product-info"><div><div class="product-name">Red Velvet</div><div class="product-price">₹600</div></div><div class="qty-control"><button class="qty-btn" onclick="changeQty('RVel',-1)">−</button><input class="qty-input" type="number" id="RVel" value="0" min="0" onchange="liveUpdate()"><button class="qty-btn" onclick="changeQty('RVel',1)">+</button></div></div>
+                </div>
+                <div class="product-card">
+                    <div class="product-img-wrap"><img class="product-img" src="/static/images/FerroCake.jpg" alt="Ferrero Rocher" onerror="this.parentElement.style.height='4px'"></div>
+                    <div class="product-info"><div><div class="product-name">Ferrero Rocher</div><div class="product-price">₹650</div></div><div class="qty-control"><button class="qty-btn" onclick="changeQty('Ferro',-1)">−</button><input class="qty-input" type="number" id="Ferro" value="0" min="0" onchange="liveUpdate()"><button class="qty-btn" onclick="changeQty('Ferro',1)">+</button></div></div>
+                </div>
+                <div class="product-card">
+                    <div class="product-img-wrap"><img class="product-img" src="/static/images/cheese.jpg" alt="Cheesecake" onerror="this.parentElement.style.height='4px'"></div>
+                    <div class="product-info"><div><div class="product-name">Cheesecake</div><div class="product-price">₹650</div></div><div class="qty-control"><button class="qty-btn" onclick="changeQty('Cheese',-1)">−</button><input class="qty-input" type="number" id="Cheese" value="0" min="0" onchange="liveUpdate()"><button class="qty-btn" onclick="changeQty('Cheese',1)">+</button></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- COOKIES & MUFFINS -->
+    <div id="cookmuf" class="page">
+        <div class="page-header">
+            <button class="back-btn" onclick="showPage('home')">← Back to Home</button>
+            <h1 class="page-title"><em>Cookies</em> & Muffins</h1>
+            <p class="page-subtitle">Freshly baked small indulgences</p>
+        </div>
+        <div class="page-body">
+            <div class="section-label">Cookies</div>
+            <div class="product-grid">
+                <div class="product-card">
+                    <div class="product-img-wrap"><img class="product-img" src="/static/images/doublec.webp" alt="Chocochips" onerror="this.parentElement.style.height='4px'"></div>
+                    <div class="product-info"><div><div class="product-name">Chocochip Cookie</div><div class="product-price">₹20 each</div></div><div class="qty-control"><button class="qty-btn" onclick="changeQty('Vchips',-1)">−</button><input class="qty-input" type="number" id="Vchips" value="0" min="0" onchange="liveUpdate()"><button class="qty-btn" onclick="changeQty('Vchips',1)">+</button></div></div>
+                </div>
+                <div class="product-card">
+                    <div class="product-img-wrap"><img class="product-img" src="/static/images/RVCook.jpg" alt="Red Velvet Cookie" onerror="this.parentElement.style.height='4px'"></div>
+                    <div class="product-info"><div><div class="product-name">Red Velvet Cookie</div><div class="product-price">₹25 each</div></div><div class="qty-control"><button class="qty-btn" onclick="changeQty('RV',-1)">−</button><input class="qty-input" type="number" id="RV" value="0" min="0" onchange="liveUpdate()"><button class="qty-btn" onclick="changeQty('RV',1)">+</button></div></div>
+                </div>
+                <div class="product-card">
+                    <div class="product-img-wrap"><img class="product-img" src="/static/images/cookies.jpg" alt="Oatmeal" onerror="this.parentElement.style.height='4px'"></div>
+                    <div class="product-info"><div><div class="product-name">Oatmeal Cookie</div><div class="product-price">₹20 each</div></div><div class="qty-control"><button class="qty-btn" onclick="changeQty('Oat',-1)">−</button><input class="qty-input" type="number" id="Oat" value="0" min="0" onchange="liveUpdate()"><button class="qty-btn" onclick="changeQty('Oat',1)">+</button></div></div>
+                </div>
+            </div>
+            <div class="section-label">Muffins</div>
+            <div class="product-grid">
+                <div class="product-card">
+                    <div class="product-img-wrap"><img class="product-img" src="/static/images/muffins1.jpg" alt="Vanilla Muffin" onerror="this.parentElement.style.height='4px'"></div>
+                    <div class="product-info"><div><div class="product-name">Vanilla Muffin</div><div class="product-price">₹30 each</div></div><div class="qty-control"><button class="qty-btn" onclick="changeQty('VcMuff',-1)">−</button><input class="qty-input" type="number" id="VcMuff" value="0" min="0" onchange="liveUpdate()"><button class="qty-btn" onclick="changeQty('VcMuff',1)">+</button></div></div>
+                </div>
+                <div class="product-card">
+                    <div class="product-img-wrap"><img class="product-img" src="/static/images/muffins2.jpg" alt="Blueberry Muffin" onerror="this.parentElement.style.height='4px'"></div>
+                    <div class="product-info"><div><div class="product-name">Blueberry Muffin</div><div class="product-price">₹35 each</div></div><div class="qty-control"><button class="qty-btn" onclick="changeQty('BlMuff',-1)">−</button><input class="qty-input" type="number" id="BlMuff" value="0" min="0" onchange="liveUpdate()"><button class="qty-btn" onclick="changeQty('BlMuff',1)">+</button></div></div>
+                </div>
+                <div class="product-card">
+                    <div class="product-img-wrap"><img class="product-img" src="/static/images/muff.jpg" alt="Choco Muffin" onerror="this.parentElement.style.height='4px'"></div>
+                    <div class="product-info"><div><div class="product-name">Chocolate Muffin</div><div class="product-price">₹35 each</div></div><div class="qty-control"><button class="qty-btn" onclick="changeQty('ChMuff',-1)">−</button><input class="qty-input" type="number" id="ChMuff" value="0" min="0" onchange="liveUpdate()"><button class="qty-btn" onclick="changeQty('ChMuff',1)">+</button></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BREADS & OTHERS -->
+    <div id="breads" class="page">
+        <div class="page-header">
+            <button class="back-btn" onclick="showPage('home')">← Back to Home</button>
+            <h1 class="page-title"><em>Breads</em> & Others</h1>
+            <p class="page-subtitle">Wholesome baked goods from our oven</p>
+        </div>
+        <div class="page-body">
+            <div class="section-label">Breads</div>
+            <div class="product-grid">
+                <div class="product-card">
+                    <div class="product-img-wrap"><img class="product-img" src="/static/images/bread.jpg" alt="Plain Bread" onerror="this.parentElement.style.height='4px'"></div>
+                    <div class="product-info"><div><div class="product-name">Plain Bread</div><div class="product-price">₹80</div></div><div class="qty-control"><button class="qty-btn" onclick="changeQty('Pln',-1)">−</button><input class="qty-input" type="number" id="Pln" value="0" min="0" onchange="liveUpdate()"><button class="qty-btn" onclick="changeQty('Pln',1)">+</button></div></div>
+                </div>
+                <div class="product-card">
+                    <div class="product-img-wrap"><img class="product-img" src="/static/images/bread1.jpg" alt="Multigrain" onerror="this.parentElement.style.height='4px'"></div>
+                    <div class="product-info"><div><div class="product-name">Multigrain Bread</div><div class="product-price">₹100</div></div><div class="qty-control"><button class="qty-btn" onclick="changeQty('Multi',-1)">−</button><input class="qty-input" type="number" id="Multi" value="0" min="0" onchange="liveUpdate()"><button class="qty-btn" onclick="changeQty('Multi',1)">+</button></div></div>
+                </div>
+            </div>
+            <div class="section-label">Others</div>
+            <div class="product-grid">
+                <div class="product-card">
+                    <div class="product-img-wrap"><img class="product-img" src="/static/images/brownie.jpg" alt="Brownie" onerror="this.parentElement.style.height='4px'"></div>
+                    <div class="product-info"><div><div class="product-name">Classic Brownie</div><div class="product-price">₹45 each</div></div><div class="qty-control"><button class="qty-btn" onclick="changeQty('Brown',-1)">−</button><input class="qty-input" type="number" id="Brown" value="0" min="0" onchange="liveUpdate()"><button class="qty-btn" onclick="changeQty('Brown',1)">+</button></div></div>
+                </div>
+                <div class="product-card">
+                    <div class="product-img-wrap"><img class="product-img" src="/static/images/brownie1.jpg" alt="Walnut Brownie" onerror="this.parentElement.style.height='4px'"></div>
+                    <div class="product-info"><div><div class="product-name">Walnut Brownie</div><div class="product-price">₹55 each</div></div><div class="qty-control"><button class="qty-btn" onclick="changeQty('WalBr',-1)">−</button><input class="qty-input" type="number" id="WalBr" value="0" min="0" onchange="liveUpdate()"><button class="qty-btn" onclick="changeQty('WalBr',1)">+</button></div></div>
+                </div>
+                <div class="product-card">
+                    <div class="product-img-wrap"><img class="product-img" src="/static/images/brownie2.jpg" alt="Fudge Brownie" onerror="this.parentElement.style.height='4px'"></div>
+                    <div class="product-info"><div><div class="product-name">Fudge Brownie</div><div class="product-price">₹60 each</div></div><div class="qty-control"><button class="qty-btn" onclick="changeQty('FudBr',-1)">−</button><input class="qty-input" type="number" id="FudBr" value="0" min="0" onchange="liveUpdate()"><button class="qty-btn" onclick="changeQty('FudBr',1)">+</button></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BILLING -->
+    <div id="bill" class="page">
+        <div class="page-header">
+            <button class="back-btn" onclick="showPage('home')">← Back to Home</button>
+            <h1 class="page-title"><em>Billing</em> Area</h1>
+            <p class="page-subtitle">Review order and generate receipt</p>
+        </div>
+        <div class="bill-layout">
+            <div>
+                <div class="form-section-title">Customer Details</div>
+                <div class="form-row">
+                    <div class="form-group"><label class="form-label">Customer Name</label><input class="form-input" type="text" id="custName" placeholder="Enter full name" oninput="refreshReceipt()"></div>
+                    <div class="form-group"><label class="form-label">Phone Number</label><input class="form-input" type="text" id="custPhone" placeholder="10-digit number" oninput="refreshReceipt()"></div>
+                </div>
+
+                <div class="form-section-title" style="margin-top:28px;">Order Summary</div>
+                <div class="order-items" id="orderSummary">
+                    <div style="color:rgba(28,15,10,0.28);font-size:13px;font-style:italic;padding:18px 0;text-align:center;">No items added yet — browse the menu to add items.</div>
+                </div>
+
+                <div class="btn-row">
+                    <button class="btn-primary btn-dark" onclick="showPage('cake')">+ Add Items</button>
+                    <button class="btn-primary btn-danger" onclick="clearAll()">Clear Order</button>
+                </div>
+            </div>
+
+            <div class="receipt-panel">
+                <div class="receipt-header">
+                    <div class="receipt-logo">Baker's Choice</div>
+                    <div class="receipt-tagline">Artisan Bakery & Confectionery</div>
+                </div>
+                <div class="receipt-body">
+                    <div class="receipt-meta"><span id="rBillNo">Bill #—</span><span id="rDate">—</span></div>
+                    <div class="receipt-field">Customer: <span id="rName">—</span></div>
+                    <div class="receipt-field" style="margin-bottom:12px;">Phone: <span id="rPhone">—</span></div>
+                    <div class="receipt-items" id="rItems"><div class="receipt-empty">Your order will appear here</div></div>
+                    <div class="receipt-totals">
+                        <div class="receipt-tax-line"><span>Subtotal</span><span id="rSubtotal">₹0.00</span></div>
+                        <div class="receipt-tax-line"><span>GST (18%)</span><span id="rTax">₹0.00</span></div>
+                        <div class="receipt-total-line"><span>Total</span><span id="rTotal">₹0.00</span></div>
+                    </div>
+                </div>
+                <div class="receipt-actions">
+                    <button class="btn-primary" onclick="generateAndSave()">Generate & Save Bill</button>
+                    <button class="btn-secondary" onclick="window.print()">🖨 Print Receipt</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const prices = {
+    Choc:550, Pine:550, Black:550, Berry:600, RVel:600, Ferro:650, Cheese:650,
+    Vchips:20, RV:25, Oat:20, VcMuff:30, BlMuff:35, ChMuff:35,
+    Pln:80, Multi:100, Brown:45, WalBr:55, FudBr:60
+};
+const names = {
+    Choc:'Chocolate Overload', Pine:'Pineapple Cake', Black:'Black Forest',
+    Berry:'Mixed Berry', RVel:'Red Velvet', Ferro:'Ferrero Rocher', Cheese:'Cheesecake',
+    Vchips:'Chocochip Cookie', RV:'Red Velvet Cookie', Oat:'Oatmeal Cookie',
+    VcMuff:'Vanilla Muffin', BlMuff:'Blueberry Muffin', ChMuff:'Chocolate Muffin',
+    Pln:'Plain Bread', Multi:'Multigrain Bread',
+    Brown:'Classic Brownie', WalBr:'Walnut Brownie', FudBr:'Fudge Brownie'
+};
+
+let billNo = Math.floor(Math.random()*8999)+1000;
+
+function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    const navId = 'nav-' + id;
+    const nav = document.getElementById(navId);
+    if (nav) nav.classList.add('active');
+    window.scrollTo(0,0);
+    if (id === 'bill') refreshReceipt();
+}
+
+function changeQty(id, delta) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.value = Math.max(0, (parseInt(el.value)||0) + delta);
+    liveUpdate();
+}
+
+function liveUpdate() {
+    if (document.getElementById('bill').classList.contains('active')) refreshReceipt();
+}
+
+function refreshReceipt() {
+    const name = document.getElementById('custName').value || '—';
+    const phone = document.getElementById('custPhone').value || '—';
+    document.getElementById('rName').textContent = name;
+    document.getElementById('rPhone').textContent = phone;
+    document.getElementById('rBillNo').textContent = 'Bill #' + billNo;
+    document.getElementById('rDate').textContent = new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+
+    let subtotal = 0, items = [];
+    Object.keys(prices).forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const qty = parseInt(el.value)||0;
+        if (qty > 0) { const cost = qty*prices[id]; subtotal+=cost; items.push({id,qty,cost}); }
+    });
+
+    const receiptEl = document.getElementById('rItems');
+    const summaryEl = document.getElementById('orderSummary');
+
+    if (items.length === 0) {
+        receiptEl.innerHTML = '<div class="receipt-empty">Your order will appear here</div>';
+        summaryEl.innerHTML = '<div style="color:rgba(28,15,10,0.28);font-size:13px;font-style:italic;padding:18px 0;text-align:center;">No items added yet — browse the menu to add items.</div>';
+    } else {
+        receiptEl.innerHTML = items.map(i=>`<div class="receipt-line"><span>${names[i.id]} ×${i.qty}</span><span>₹${i.cost.toFixed(2)}</span></div>`).join('');
+        summaryEl.innerHTML = items.map(i=>`<div class="order-item-row"><span class="order-item-name">${names[i.id]}</span><span style="color:rgba(28,15,10,0.35);font-size:12px;">×${i.qty}</span><span class="order-item-price">₹${i.cost.toFixed(2)}</span></div>`).join('');
+    }
+
+    const tax = subtotal*0.18, total = subtotal+tax;
+    document.getElementById('rSubtotal').textContent = `₹${subtotal.toFixed(2)}`;
+    document.getElementById('rTax').textContent = `₹${tax.toFixed(2)}`;
+    document.getElementById('rTotal').textContent = `₹${total.toFixed(2)}`;
+}
+
+function clearAll() {
+    Object.keys(prices).forEach(id => { const el=document.getElementById(id); if(el) el.value=0; });
+    billNo = Math.floor(Math.random()*8999)+1000;
+    refreshReceipt();
+    showToast('Order cleared');
+}
+
+async function generateAndSave() {
+    const name = document.getElementById('custName').value || 'Customer';
+    const phone = document.getElementById('custPhone').value || '—';
+    let subtotal = 0, lines = '', hasItems = false;
+
+    Object.keys(prices).forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const qty = parseInt(el.value)||0;
+        if (qty > 0) {
+            hasItems = true;
+            const cost = qty*prices[id]; subtotal+=cost;
+            lines += `${names[id].padEnd(22)} ${qty.toString().padStart(3)}   Rs ${cost.toFixed(2)}\n`;
+        }
+    });
+
+    if (!hasItems) { showToast('Please add items to generate a bill'); return; }
+
+    const tax = subtotal*0.18, total = subtotal+tax;
+    const date = new Date().toLocaleDateString('en-IN');
+    let bill = `\n         Baker's Choice\n   Artisan Bakery & Confectionery\n`;
+    bill += `==========================================\n`;
+    bill += `Bill No : ${billNo}          Date: ${date}\n`;
+    bill += `Customer: ${name}\nPhone   : ${phone}\n`;
+    bill += `------------------------------------------\n`;
+    bill += `Item                      Qty       Amount\n`;
+    bill += `------------------------------------------\n${lines}`;
+    bill += `------------------------------------------\n`;
+    bill += `Subtotal :                       Rs ${subtotal.toFixed(2)}\n`;
+    bill += `GST 18%  :                       Rs ${tax.toFixed(2)}\n`;
+    bill += `TOTAL    :                       Rs ${total.toFixed(2)}\n`;
+    bill += `==========================================\n       Thank you! Visit again.\n`;
+
+    try {
+        const fd = new FormData();
+        fd.append('bill_text', bill);
+        const res = await fetch('/save_bill', { method:'POST', body:fd });
+        const data = await res.json();
+        showToast('✓ Bill saved successfully');
+        billNo = Math.floor(Math.random()*8999)+1000;
+    } catch(e) {
+        showToast('Bill generated (server save failed)');
+    }
+}
+
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'), 3200);
+}
+
+// Init date
+document.getElementById('rDate').textContent = new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+</script>
+</body>
+</html>
