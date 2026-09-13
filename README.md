@@ -22,16 +22,6 @@ The application serves a bakery storefront page where customers can select items
 | Package Manager   | uv                                   |
 | Database (optional)| MySQL (via `mysql-connector-python`)|
 
-## Project Structure
-BakersChoice/
-├── main.py # FastAPI application and route definitions
-├── templates/ # HTML templates rendered via Jinja2
-├── static/images/ # Static image assets used by the website
-├── Bill.txt # Generated order bills are appended here
-├── pyproject.toml # Project metadata and dependencies
-└── uv.lock # Locked dependency versions
-
-
 ## Prerequisites
 
 - Python 3.13 or higher
