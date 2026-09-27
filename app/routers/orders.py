@@ -14,12 +14,17 @@ router = APIRouter(prefix="/api/orders", tags=["orders"])
 def get_orders(db: Session = Depends(get_db)):
     return db.query(models.Order).order_by(models.Order.id.desc()).all()
 
+@router.get("/my-orders", response_model=List[schemas.Order])
+def get_my_orders(current_user: models.User = Depends(deps.get_current_user), db: Session = Depends(get_db)):
+    return db.query(models.Order).filter(models.Order.user_id == current_user.id).order_by(models.Order.id.desc()).all()
+
 @router.post("/", response_model=schemas.Order)
-def create_order(order: schemas.OrderCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+def create_order(order: schemas.OrderCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db), current_user: models.User = Depends(deps.get_current_user_optional)):
     db_order = models.Order(
         customer_name=order.customer_name,
         customer_phone=order.customer_phone,
-        status=order.status
+        status=order.status,
+        user_id=current_user.id if current_user else None
     )
     db.add(db_order)
     db.commit()
@@ -39,6 +44,13 @@ def create_order(order: schemas.OrderCreate, background_tasks: BackgroundTasks, 
     # add tax
     total_amount = total_amount * 1.18
     db_order.total_amount = total_amount
+    
+    # Loyalty program logic
+    if current_user:
+        points_earned = int(total_amount // 100)
+        current_user.loyalty_points += points_earned
+        db.add(current_user)
+
     db.commit()
     db.refresh(db_order)
 

@@ -20,6 +20,8 @@ class Category(CategoryBase):
 class UserBase(BaseModel):
     username: str
     email: str
+    phone: Optional[str] = None
+    address: Optional[str] = None
 
 class UserCreate(UserBase):
     password: str
@@ -29,6 +31,7 @@ class User(UserBase):
     id: int
     role: str
     is_active: bool
+    loyalty_points: int
 
     class Config:
         from_attributes = True
@@ -79,6 +82,7 @@ class OrderBase(BaseModel):
     customer_name: str
     customer_phone: Optional[str] = None
     status: str = "Pending"
+    user_id: Optional[int] = None
 
 class OrderCreate(OrderBase):
     items: List[OrderItemCreate]
