@@ -26,7 +26,39 @@ This document serves as an architectural record and update log for the BakersCho
   - Integrated `passlib` for bcrypt password hashing.
   - Implemented JWT-based authentication using `python-jose`.
 
+## Implemented Features (Phase 3: Backend API Development)
+- **Schema Refactoring (`app/schemas.py`)**:
+  - Restructured all Pydantic schemas to strictly type UUIDs and Enum statuses from the new PostgreSQL models.
+  - Implemented `Cart` and `PointsLedger` schemas.
+- **Authentication Router (`app/routers/auth.py`)**:
+  - Transitioned login mechanism to rely exclusively on `email` instead of `username`, generating JWT tokens tied to email.
+  - Added logic to automatically provision an empty `Cart` for newly registered users.
+- **Product & Inventory Router (`app/routers/products.py`)**:
+  - Added new endpoint `PUT /api/products/{product_id}/stock` strictly for Admins to adjust inventory levels and concurrently record to `StockAuditLog`.
+- **Order Processing Router (`app/routers/orders.py`)**:
+  - Rewritten `POST /api/orders` to execute atomic stock deductions: checks current stock securely and prevents overselling (returns 400 if out of stock).
+  - Integrated robust Point Redemption constraints (redeem logic caps at 50% order value) and Points Earnings logic directly connected to the `PointsLedger`.
+  - Maintained WebSocket broadcasting on new order creation/status changes for real-time Admin dashboard updates.
+- **Core App (`main.py`)**:
+  - Removed outdated Jinja2 templating and static file mounting logic.
+  - Installed `CORSMiddleware` to permit cross-origin requests from the Vite React frontend (port 5173).
+
 ## Pending / Future Work
-- Update existing routes (`app/routers/`) and schemas (`app/schemas.py`) to fully utilize the new UUID-based PostgreSQL schema.
-- Run Alembic migrations on a live PostgreSQL database to apply the new schema.
-- Integrate a real Payment Gateway (Stripe/Razorpay) before finalizing checkout (Requires API keys).
+- Generate API client types for the frontend using `openapi-typescript` based on the new `/openapi.json`.
+- Implement `WeasyPrint` or similar mechanism for PDF Invoice generation on order completion.
+- Begin **Phase 4: Frontend Implementation (React)**.
+
+## Implemented Features (Phase 4: Frontend Implementation)
+- **API Client Generation**:
+  - Automatically generated typed API definitions (`src/api/schema.d.ts`) using `openapi-typescript` referencing the backend OpenAPI specs.
+  - Setup `openapi-fetch` API client (`src/api/client.ts`) globally configured with automatic JWT injection.
+- **State Management (Zustand)**:
+  - Created `authStore.ts` to manage user sessions and persistence locally.
+  - Created `cartStore.ts` for localized cart management, supporting dynamic quantity updates and tax calculations before pushing to the checkout API.
+- **Customer Storefront UI**:
+  - Engineered core foundational layout components: `Navbar`, `CartDrawer`, and customized `Button` component using Tailwind CSS matching the PRD typography (Playfair Display / Poppins).
+  - Built the `HomePage` integrating the `GET /api/products/` API endpoint to display real-time stock levels, pricing, and "Add to Cart" functionality securely.
+  
+## Pending / Future Work
+- Build the **Admin Dashboard** (order queue management, inventory restock, WebSockets integration for real-time orders).
+- Implement the comprehensive Checkout flow linking the frontend Cart to the Backend `POST /api/orders` endpoints.

@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.core.security import SECRET_KEY, ALGORITHM
 from app import models, schemas
+from app.models import RoleEnum
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
 
@@ -16,13 +17,13 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None:
+        email: str = payload.get("sub")
+        if email is None:
             raise credentials_exception
-        token_data = schemas.TokenData(username=username)
+        token_data = schemas.TokenData(email=email)
     except JWTError:
         raise credentials_exception
-    user = db.query(models.User).filter(models.User.username == token_data.username).first()
+    user = db.query(models.User).filter(models.User.email == token_data.email).first()
     if user is None:
         raise credentials_exception
     return user
@@ -32,14 +33,14 @@ async def get_current_user_optional(token: str = Depends(OAuth2PasswordBearer(to
         return None
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
-        if username:
-            return db.query(models.User).filter(models.User.username == username).first()
+        email: str = payload.get("sub")
+        if email:
+            return db.query(models.User).filter(models.User.email == email).first()
     except JWTError:
         return None
     return None
 
 def get_current_admin_user(current_user: models.User = Depends(get_current_user)):
-    if current_user.role != "admin":
+    if current_user.role != RoleEnum.admin:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough privileges")
     return current_user

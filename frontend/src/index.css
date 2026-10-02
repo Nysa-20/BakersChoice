@@ -1,13 +1,27 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-cream: #F1E4A6;
+  --color-deep-green: #1F3A18;
+  --color-olive-green: #264A1E;
+  --color-charcoal: #333333;
+  
+  --font-playfair: "Playfair Display", serif;
+  --font-poppins: "Poppins", sans-serif;
+}
 
 @layer base {
   body {
-    @apply bg-cream text-charcoal font-sans antialiased;
+    background-color: var(--color-cream);
+    color: var(--color-charcoal);
+    font-family: var(--font-poppins);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-serif text-deep-green font-medium;
+    font-family: var(--font-playfair);
+    color: var(--color-deep-green);
+    font-weight: 500;
   }
 }

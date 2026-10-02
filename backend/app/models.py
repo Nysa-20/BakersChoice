@@ -131,7 +131,7 @@ class OrderItem(Base):
     quantity = Column(Integer, nullable=False)
 
     order = relationship("Order", back_populates="items")
-    item = relationship("Item")
+    item = relationship("Item", foreign_keys=[item_id])
     
     # Legacy support
     product_id = Column(UUID(as_uuid=True), ForeignKey("items.id"), nullable=True)
