@@ -48,17 +48,44 @@ This document serves as an architectural record and update log for the BakersCho
 - Implement `WeasyPrint` or similar mechanism for PDF Invoice generation on order completion.
 - Begin **Phase 4: Frontend Implementation (React)**.
 
-## Implemented Features (Phase 4: Frontend Implementation)
+## Implemented Features (Phase 4: Frontend Implementation - Complete Artisanal Overhaul)
 - **API Client Generation**:
   - Automatically generated typed API definitions (`src/api/schema.d.ts`) using `openapi-typescript` referencing the backend OpenAPI specs.
   - Setup `openapi-fetch` API client (`src/api/client.ts`) globally configured with automatic JWT injection.
 - **State Management (Zustand)**:
   - Created `authStore.ts` to manage user sessions and persistence locally.
   - Created `cartStore.ts` for localized cart management, supporting dynamic quantity updates and tax calculations before pushing to the checkout API.
-- **Customer Storefront UI**:
-  - Engineered core foundational layout components: `Navbar`, `CartDrawer`, and customized `Button` component using Tailwind CSS matching the PRD typography (Playfair Display / Poppins).
-  - Built the `HomePage` integrating the `GET /api/products/` API endpoint to display real-time stock levels, pricing, and "Add to Cart" functionality securely.
-  
+- **Brand Identity & Typography Tokens (`02-design.md`)**:
+  - Pervasive Butter Cream (`#F1E4A6`) foundation with Deep Forest Green (`#1F3A18`) and Olive (`#264A1E`) accents.
+  - Injected Google Fonts **Playfair Display** (Headings) and **Poppins** (Body & UI labels).
+- **Signature UI Primitives Built (`src/components/ui/`)**:
+  - `ScallopedDivider.tsx`: Custom SVG wave path recreating the pie-crust scalloped border on thumbnails and section boundaries.
+  - `StatCard.tsx`: Deep green rounded rectangle cards displaying bold white numbers (`80+`, `95+`, points balance) overlapping editorial photo edges.
+  - `ChevronList.tsx`: Feature bullets utilizing the deep green left-chevron (`‹`) glyph.
+  - `DiagonalTickerRibbon.tsx`: Sliced banner with continuous marquee infinite loop of bakery keywords.
+  - `Button.tsx`: Refined to strict 8–10px soft rectangle, deep forest green fill, white text, and subtle hover scale.
+- **Complete Page Suite Implemented**:
+  - **Homepage (`HomePage.tsx`)**: Reconstructed all sections from `02-design.md` (Split Hero with scalloped teasers & floating caption, Intro/Stats section with overlapping StatCards, Diagonal Ticker Ribbon, 4-column minimal Best Sellers grid, reversed Catering feature, Brand Story collage, Testimonial carousel with progress indicator, and Artisanal Footer).
+  - **Catalog & Filter Page (`CatalogPage.tsx`)**: Full 8-item catalog with category pills, dietary tags (Vegan, Organic, Gluten-Free), search bar, stock counters, and "Sold Out" badge styling.
+  - **Catering Page (`CateringPage.tsx`)**: Wedding & banquet packages, guest tiers, and interactive consultation inquiry form.
+  - **About Page (`AboutPage.tsx`)**: Heritage 36-hour sourdough fermentation story, cultured butter lamination details, and stat cards.
+  - **Contact Page (`ContactPage.tsx`)**: Historic Pastry District address, bakehouse pickup hours, direct inquiry form.
+  - **On-Brand Auth (`LoginPage.tsx`)**: Customer and Admin login with welcome points callout.
+  - **Cart Drawer & Checkout (`CartDrawer.tsx`, `CheckoutPage.tsx`)**: Slide-out basket, delivery vs pickup toggle, interactive loyalty points redemption slider (enforcing max 50% discount per PRD FR-13), tax calculation, and order confirmation.
+  - **User Account (`AccountPage.tsx`)**: StatCard for Points Balance, reward tier callout, past order history with downloadable invoice buttons.
+  - **Admin Dashboard (`AdminDashboard.tsx`)**: Data-first layout adhering to brand tokens with 4 KPI StatCards, inventory table with low-stock warnings, and live orders queue with fulfillment controls.
+- **Indian Market Localization & Rupee (₹) Currency Migration**:
+  - Migrated all currency representations across the platform from USD ($) to Indian Rupees (₹).
+  - Configured Indian tax structure (5% GST on bakery & confectionery items).
+  - Added green "Pure Vegetarian / 100% Eggless" symbol indicators across all product cards and category filters.
+  - Re-curated the product catalog with artisanal Indian and fusion bakery offerings: *Cardamom & Saffron Mawa Cake (₹320), Artisan Sourdough Loaf (₹280), Belgian Dark Truffle Cake - Eggless (₹950), Smoked Paneer Tikka Puff (₹140), Rasmalai Tres Leches Gateau (₹1,100), Brioche Sourdough Pav (₹120), Classic Butter Croissant (₹180), and Almond Nankhatai Tin (₹450)*.
+  - Updated marquee ticker with India-oriented keywords: `100% Eggless Options ✦ HandCrafted ✦ DesiMawaCakes ✦ SourdoughPav ✦ CulturedButter ✦ RasmalaiGateau ✦ BelgianTruffle ✦ KhapliWheat ✦ PaneerPuff ✦ DailyFreshBakes ✦ PureDesiGhee ✦ IraniBakeryCraft`.
+  - Configured localized Indian payment methods on checkout: UPI (Google Pay, PhonePe, Paytm, BHIM VPA), NetBanking, Credit/Debit cards, and local PIN-code address forms.
+  - Localized flagship bakehouse details: 14, 100 Feet Road, Indiranagar, Bengaluru, Karnataka (+91 98450 72839) with FSSAI license notation.
+  - Updated backend database seed script (`seed_db.py`) to align DB with Indian categories, items, and INR pricing.
+- **Visual Verification**:
+  - Playwright visual regression captures verified for the complete storefront, catalog, and admin portal.
+
 ## Pending / Future Work
-- Build the **Admin Dashboard** (order queue management, inventory restock, WebSockets integration for real-time orders).
-- Implement the comprehensive Checkout flow linking the frontend Cart to the Backend `POST /api/orders` endpoints.
+- PDF Invoice rendering service (WeasyPrint) on the backend for downloading invoices from Order History.
+- Live WebSockets listener in the Admin Dashboard for instant incoming order alerts without manual refreshing.

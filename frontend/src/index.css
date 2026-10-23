@@ -2,12 +2,14 @@
 
 @theme {
   --color-cream: #F1E4A6;
+  --color-cream-light: #F9F3D8;
   --color-deep-green: #1F3A18;
   --color-olive-green: #264A1E;
   --color-charcoal: #333333;
+  --color-charcoal-muted: #666666;
   
-  --font-playfair: "Playfair Display", serif;
-  --font-poppins: "Poppins", sans-serif;
+  --font-playfair: "Playfair Display", Georgia, serif;
+  --font-poppins: "Poppins", -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 @layer base {
@@ -24,4 +26,27 @@
     color: var(--color-deep-green);
     font-weight: 500;
   }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 25s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Scalloped edge decorative mask helper */
+.scallop-mask {
+  mask-image: radial-gradient(circle 12px at bottom center, transparent 12px, black 13px);
+  mask-size: 26px 100%;
+  mask-repeat: repeat-x;
+  mask-position: bottom;
 }

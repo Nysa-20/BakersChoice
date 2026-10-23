@@ -1,29 +1,42 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Navbar } from './components/layout/Navbar';
 import { CartDrawer } from './components/layout/CartDrawer';
+import { Footer } from './components/layout/Footer';
 import HomePage from './pages/HomePage';
+import CatalogPage from './pages/CatalogPage';
+import AboutPage from './pages/AboutPage';
+import CateringPage from './pages/CateringPage';
+import ContactPage from './pages/ContactPage';
+import LoginPage from './pages/LoginPage';
+import CheckoutPage from './pages/CheckoutPage';
+import AccountPage from './pages/AccountPage';
+import AdminDashboard from './pages/admin/AdminDashboard';
 
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-gray-50 font-poppins text-gray-900">
+      <div className="min-h-screen bg-cream font-poppins text-[#333333] flex flex-col selection:bg-[#1F3A18] selection:text-cream">
         <Navbar />
         <CartDrawer />
         
-        <main>
+        <main className="flex-1">
           <Routes>
             <Route path="/" element={<HomePage />} />
-            {/* Add more routes here as we build them */}
+            <Route path="/cakes" element={<CatalogPage />} />
+            <Route path="/products" element={<CatalogPage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/catering" element={<CateringPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<LoginPage />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/account" element={<AccountPage />} />
+            <Route path="/profile" element={<AccountPage />} />
+            <Route path="/admin" element={<AdminDashboard />} />
           </Routes>
         </main>
         
-        {/* Simple Footer */}
-        <footer className="bg-deep-green text-cream py-8 mt-auto">
-          <div className="container mx-auto px-4 text-center">
-            <p className="font-playfair text-xl mb-4">Baker's Choice</p>
-            <p className="text-sm opacity-80">© {new Date().getFullYear()} Baker's Choice. All rights reserved.</p>
-          </div>
-        </footer>
+        <Footer />
       </div>
     </Router>
   );
